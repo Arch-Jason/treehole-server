@@ -11,6 +11,8 @@ import '@draft-js-plugins/image/lib/plugin.css';
 import 'draft-js/dist/Draft.css';
 import { LucidePlusCircle, LucideMinusCircle, LucideImage } from "lucide-react";
 
+import './style.css'
+
 // 初始化插件
 const staticToolbarPlugin = createToolbarPlugin();
 const { Toolbar } = staticToolbarPlugin;
@@ -103,12 +105,11 @@ export default function CreateNew() {
     );
     try {
       console.log(htmlList);
-      const response = await fetch("/api/ModRecordHtml", {
+      const response = await fetch("/api/AddRecord", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ htmlList }),
       });
-      if (!response.ok) throw new Error("提交失败");
       alert("提交成功！");
     } catch (error) {
       console.error("提交错误:", error);
@@ -127,7 +128,7 @@ return (
       </button>
 
       {editors.map((editor) => (
-        <div key={editor.id} className="h-80 relative group bg-white p-4 rounded-lg shadow-md">
+        <div key={editor.id} className="relative group bg-white p-4 rounded-lg shadow-md">
           <button
             onClick={() => removeEditor(editor.id)}
             disabled={editors.length <= 1}
