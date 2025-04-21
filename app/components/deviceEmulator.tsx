@@ -11,7 +11,7 @@ export default function DeviceEmulator(props: { id: Number }) {
     const fetchData = async () => {
       try {
         const htmlResponse = await fetch(
-          `/api/GetRecordHTML?recordNumber=${props.id}`
+          `/api/GetRecordHtml?recordNumber=${props.id}`
         );
         const htmlData = await htmlResponse.json();
         setHtmlList(htmlData.html.html_list);
