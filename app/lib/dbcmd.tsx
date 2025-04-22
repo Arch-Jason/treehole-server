@@ -24,3 +24,8 @@ export async function AddRecord(payload: Array<String>) {
     );
     return res;
 }
+
+export async function GetLatestRecord() {
+    const [res, _] = await db.query<RowDataPacket[]>("SELECT html_list FROM html_list ORDER BY id DESC LIMIT 1");
+    return res[0];
+}
