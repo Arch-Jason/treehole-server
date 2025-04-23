@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from "react";
 
+interface TreeholeHtmlItem {
+  html: string;
+}
+
 export default function DeviceEmulator(props: { id: Number }) {
   if (props.id === 0) return <div className={"w-200 h-100 border-10 border-gray-500 rounded-lg shadow-md overflow-hidden"}></div>;
   const [htmlList, setHtmlList] = useState<string[]>([]);
@@ -14,7 +18,12 @@ export default function DeviceEmulator(props: { id: Number }) {
           `/api/GetRecordHtml?recordNumber=${props.id}`
         );
         const htmlData = await htmlResponse.json();
-        setHtmlList(htmlData.html.html_list);
+        const treeholeHttpResponse= await fetch(
+          `/api/GetTreeholeRecord`
+        );
+        const treeholeHtmlData = await treeholeHttpResponse.json();
+        const treeholeHtmlDataList = treeholeHtmlData.map((dic: TreeholeHtmlItem) => {return dic.html;})
+        setHtmlList([...htmlData.html.html_list, ...treeholeHtmlDataList]);
       } catch (error) {
         console.error("Error fetching data:", error);
       }

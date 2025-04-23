@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from 'clsx';
-import { Home, PlusCircle, Clock } from 'lucide-react';
+import { Home, PlusCircle, Clock, TreesIcon } from 'lucide-react';
 
 const navItems = [
   { href: '/', label: '概况', icon: Home },
   { href: '/new', label: '编辑新记录', icon: PlusCircle },
   { href: '/history', label: '历史记录', icon: Clock },
+  { href: '/treehole', label: '树洞', icon: TreesIcon },
 ];
 
 export default function SideNav() {

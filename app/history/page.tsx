@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import DeviceEmulator from "../components/deviceEmulator";
 import clsx from "clsx";
+import { PutRowToEnd } from "../lib/dbcmd";
 
 export default function HistoryList() {
   const [recordList, setRecordList] = useState([]);
