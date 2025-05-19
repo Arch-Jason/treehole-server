@@ -28,10 +28,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex min-h-screen`}
       >
-        <div className="w-56">
-          <SideNav />
-        </div>
-        <div className="w-screen">{children}</div>
+        {children}
       </body>
     </html>
   );

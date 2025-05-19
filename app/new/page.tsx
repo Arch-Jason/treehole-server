@@ -32,6 +32,7 @@ import {
   BlockquoteButton,
   CodeBlockButton,
 } from '@draft-js-plugins/buttons';
+import SideNav from "../components/sideNav";
 
 interface EditorData {
   id: number;
@@ -118,7 +119,9 @@ export default function CreateNew() {
   };
 
 return (
-  <div className="p-4 bg-gray-50 rounded-lg shadow-md">
+  <div className="w-screen flex flex-row">
+  <SideNav />
+  <div className="p-4 bg-gray-50 rounded-lg shadow-md w-full">
     <div className="flex flex-col space-y-4">
       <button
         onClick={addEditor}
@@ -208,6 +211,7 @@ return (
     >
       提交
     </button>
+  </div>
   </div>
 );
 }

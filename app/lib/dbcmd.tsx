@@ -39,8 +39,8 @@ export async function GetLatestRecord() {
 
 export async function AddTreeHoleRecord(htmlContent: string) {
   const [res, _] = await db.query<RowDataPacket[]>(
-      "INSERT INTO treehole (html) VALUES (?)",
-      [htmlContent]
+    'INSERT INTO treehole (html, feedback) VALUES (?, \'{"positive": 0, "negative": 0}\')',
+    [htmlContent]
   );
   return res;
 }
@@ -48,4 +48,44 @@ export async function AddTreeHoleRecord(htmlContent: string) {
 export async function GetTreeholeRecordsList() {
   const [res, _] = await db.query<RowDataPacket[]>("SELECT * FROM treehole");
   return res;
+}
+
+export async function treeholeFeedbackPositiveInc(id: number) {
+  const [res, _] = await db.query<RowDataPacket[]>(
+    "SELECT feedback FROM treehole WHERE id = ?",
+    [id]
+  );
+
+  if (res.length > 0) {
+    let feedback = res[0].feedback;
+    feedback.positive += 1;
+
+    await db.query<RowDataPacket[]>(
+      "UPDATE treehole SET feedback = ? WHERE id = ?",
+      [JSON.stringify(feedback), id]
+    );
+    return true;
+  } else {
+    return false;
+  }
+}
+
+export async function treeholeFeedbackNegativeInc(id: number) {
+  const [res, _] = await db.query<RowDataPacket[]>(
+    "SELECT feedback FROM treehole WHERE id = ?",
+    [id]
+  );
+
+  if (res.length > 0) {
+    let feedback = res[0].feedback;
+    feedback.negative += 1;
+
+    await db.query<RowDataPacket[]>(
+      "UPDATE treehole SET feedback = ? WHERE id = ?",
+      [JSON.stringify(feedback), id]
+    );
+    return true;
+  } else {
+    return false;
+  }
 }

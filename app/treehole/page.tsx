@@ -9,16 +9,7 @@ import { stateToHTML } from "draft-js-export-html";
 import '@draft-js-plugins/static-toolbar/lib/plugin.css';
 import '@draft-js-plugins/image/lib/plugin.css';
 import 'draft-js/dist/Draft.css';
-import { LucidePlusCircle, LucideMinusCircle, LucideImage } from "lucide-react";
-
-import '../new/style.css'
-
-// 初始化插件
-const staticToolbarPlugin = createToolbarPlugin();
-const { Toolbar } = staticToolbarPlugin;
-const imagePlugin = createImagePlugin();
-const plugins = [staticToolbarPlugin, imagePlugin];
-
+import { LucideImage } from "lucide-react";
 import {
   BoldButton,
   ItalicButton,
@@ -30,6 +21,10 @@ import {
   OrderedListButton,
 } from '@draft-js-plugins/buttons';
 
+import "./style.css";
+
+const imagePlugin = createImagePlugin();
+
 interface EditorData {
   id: number;
   editorState: EditorState;
@@ -37,25 +32,48 @@ interface EditorData {
 }
 
 export default function TreeHoleSubmit() {
-  const [editor, setEditor] = useState<EditorData>({
-    id: Date.now(),
-    editorState: createEditorStateWithText(""),
-    placeholder: "请输入树洞内容...",
-  });
+  const [hasMounted, setHasMounted] = useState(false);
+  const [editor, setEditor] = useState<EditorData | null>(null);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [name, setName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Plugin states
+  const [plugins, setPlugins] = useState<any[]>([]);
+  const [ToolbarComponent, setToolbarComponent] = useState<React.ComponentType<any> | null>(null);
 
-  const updateEditorState = (newState: any) => {
-    setEditor((prev) => ({
-      ...prev,
-      editorState: newState,
-    }));
+  useEffect(() => {
+    // Client-side only initialization
+    setHasMounted(true);
+    
+    // Initialize plugins
+    const staticToolbarPlugin = createToolbarPlugin();
+    const { Toolbar } = staticToolbarPlugin;
+    
+    setPlugins([staticToolbarPlugin, imagePlugin]);
+    setToolbarComponent(() => Toolbar);
+    
+    // Initialize editor state
+    setEditor({
+      id: Date.now(),
+      editorState: createEditorStateWithText(""),
+      placeholder: ""
+    });
+  }, []);
+
+  const updateEditorState = (newState: EditorState) => {
+    setEditor((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        editorState: newState,
+      };
+    });
   };
 
   const handleFileUpload = () => {
     const file = fileInputRef.current?.files?.[0];
-    if (!file) return;
+    if (!file || !editor) return;
 
     const reader = new FileReader();
     reader.onload = () => {
@@ -63,16 +81,21 @@ export default function TreeHoleSubmit() {
         editor.editorState,
         reader.result as string
       );
-      setEditor((prev) => ({
-        ...prev,
-        editorState: newEditorState,
-      }));
-      if (fileInputRef.current) fileInputRef.current.value = ''; // 清空文件输入
+      setEditor((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          editorState: newEditorState,
+        };
+      });
+      if (fileInputRef.current) fileInputRef.current.value = '';
     };
     reader.readAsDataURL(file);
   };
 
   const submitAll = async () => {
+    if (!editor) return;
+    
     const htmlList = [stateToHTML(editor.editorState.getCurrentContent())];
     try {
       const response = await fetch("/api/TreeholeAddRecord", {
@@ -80,8 +103,17 @@ export default function TreeHoleSubmit() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ htmlList, isAnonymous, name }),
       });
+      
       if (response.ok) {
         alert("提交成功！");
+        // Reset form
+        setEditor({
+          id: Date.now(),
+          editorState: createEditorStateWithText(""),
+          placeholder: "请输入树洞内容...",
+        });
+        setName("");
+        setIsAnonymous(false);
       } else {
         alert("提交失败！");
       }
@@ -91,8 +123,13 @@ export default function TreeHoleSubmit() {
     }
   };
 
+  // Prevent server-side rendering of editor content
+  if (!hasMounted || !editor || !ToolbarComponent) {
+    return null;
+  }
+
   return (
-    <div className="p-4 bg-gray-50 rounded-lg shadow-md">
+    <div className="p-4 bg-gray-50 rounded-lg shadow-md w-full">
       <div className="flex flex-col space-y-4">
         <div className="flex items-center space-x-4">
           <input
@@ -101,23 +138,24 @@ export default function TreeHoleSubmit() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             disabled={isAnonymous}
-            className="p-2 border rounded"
+            className="p-2 border rounded w-full max-w-[200px]"
           />
           <label className="flex items-center space-x-2">
             <input
               type="checkbox"
               checked={isAnonymous}
               onChange={() => setIsAnonymous(!isAnonymous)}
+              className="w-4 h-4"
             />
-            <span>匿名发布</span>
+            <span className="text-sm">匿名发布</span>
           </label>
         </div>
 
         <div className="relative group bg-white p-4 rounded-lg shadow-md">
           <div className="mb-4">
-            <Toolbar>
-              {(externalProps) => (
-                <div className="flex flex-row items-center gap-2 mb-2">
+            <ToolbarComponent>
+              {(externalProps: any) => (
+                <div className="flex flex-row items-center gap-2 mb-2 flex-wrap">
                   <BoldButton {...externalProps} />
                   <ItalicButton {...externalProps} />
                   <UnderlineButton {...externalProps} />
@@ -141,7 +179,7 @@ export default function TreeHoleSubmit() {
                   </div>
                 </div>
               )}
-            </Toolbar>
+            </ToolbarComponent>
 
             <Editor
               editorState={editor.editorState}
@@ -155,7 +193,7 @@ export default function TreeHoleSubmit() {
 
       <button
         onClick={submitAll}
-        className="mt-4 px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+        className="mt-4 px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors w-full"
       >
         提交
       </button>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import DeviceEmulator from "../components/deviceEmulator";
 import clsx from "clsx";
-import { PutRowToEnd } from "../lib/dbcmd";
+import SideNav from "../components/sideNav";
 
 export default function HistoryList() {
   const [recordList, setRecordList] = useState([]);
@@ -30,6 +30,8 @@ export default function HistoryList() {
   if (!isLoading && recordList.length === 0) return <div>无历史记录</div>;
 
   return (
+    <div className="w-screen flex flex-row">
+    <SideNav />
     <div className="flex gap-6 h-screen w-full">
       <div className="w-100 bg-white p-4 rounded-lg shadow-lg overflow-y-auto">
         <div className="text-2xl font-semibold text-gray-800 mb-4">
@@ -59,6 +61,7 @@ export default function HistoryList() {
           <DeviceEmulator key={currentRecord} id={Number(currentRecord)} />
         </div>
       </div>
+    </div>
     </div>
   );
 }

@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
         const response = records.map(record => ({
             id: record.id,
             html: record.html,
+            feedback: record.feedback,
             timestamp: record.timestamp
         })); // 格式化返回的记录
         return NextResponse.json(response); // 返回记录数组作为 JSON 响应
