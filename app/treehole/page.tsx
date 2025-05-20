@@ -36,6 +36,7 @@ export default function TreeHoleSubmit() {
   const [editor, setEditor] = useState<EditorData | null>(null);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [name, setName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Plugin states
@@ -79,7 +80,8 @@ export default function TreeHoleSubmit() {
     reader.onload = () => {
       const newEditorState = imagePlugin.addImage(
         editor.editorState,
-        reader.result as string
+        reader.result as string,
+        {}
       );
       setEditor((prev) => {
         if (!prev) return null;
@@ -95,7 +97,9 @@ export default function TreeHoleSubmit() {
 
   const submitAll = async () => {
     if (!editor) return;
-    
+
+    setIsSubmitting(true);
+
     const htmlList = [stateToHTML(editor.editorState.getCurrentContent())];
     try {
       const response = await fetch("/api/TreeholeAddRecord", {
@@ -120,6 +124,8 @@ export default function TreeHoleSubmit() {
     } catch (error) {
       console.error("提交错误:", error);
       alert("提交时出错");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -193,9 +199,36 @@ export default function TreeHoleSubmit() {
 
       <button
         onClick={submitAll}
-        className="mt-4 px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors w-full"
+        className="mt-4 px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors w-full flex items-center justify-center"
+        disabled={isSubmitting}
       >
-        提交
+        {isSubmitting ? (
+          <>
+            <svg
+              className="animate-spin h-5 w-5 mr-2 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8H4z"
+              />
+            </svg>
+            正在提交...服务器很慢，请耐心
+          </>
+        ) : (
+          "提交"
+        )}
       </button>
     </div>
   );

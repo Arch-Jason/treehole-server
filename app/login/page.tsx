@@ -28,7 +28,7 @@ export default function LoginForm() {
         },
         body: JSON.stringify({
           username: username,
-          password: hasPassStored ? password : md5(password).toString(), // 密码MD5加密
+          password: hasPassStored ? password : md5(password ? password : "").toString(), // 密码MD5加密
         }),
       });
 
@@ -39,8 +39,8 @@ export default function LoginForm() {
       const data = await response.json();
 
       if (data.success) {
-        Cookie.set("username", username)
-        Cookie.set("password", md5(password).toString())
+        Cookie.set("username", username ? username : "")
+        Cookie.set("password", md5(password ? password : "").toString())
         
         router.push('/');
       } else {

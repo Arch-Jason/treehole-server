@@ -64,7 +64,7 @@ export default function CreateNew() {
       setEditors(prev => prev.map(editor => {
         if (editor.id === editorId) {
           // 使用 imagePlugin 插入图片
-          const newEditorState = imagePlugin.addImage(editor.editorState, reader.result as string);
+          const newEditorState = imagePlugin.addImage(editor.editorState, reader.result as string, {});
           return { ...editor, editorState: newEditorState };
         }
         return editor;
